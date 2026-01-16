@@ -32,6 +32,8 @@ async def run():
 
         for ticker in ["btc_usd", "eth_usd"]:
             price = await fetch_price(ticker)
-            await repository.add_one(
-                {"ticker": ticker, "price": price, "timestamp": int(time.time())}
-            )
+            await repository.add_one({
+                "ticker": ticker,
+                "price": price,
+                "timestamp": int(time.time())
+            })

@@ -21,8 +21,8 @@ async def engine():  # без scope="session"
 @pytest_asyncio.fixture
 async def session(engine):
     Session = async_sessionmaker(engine, expire_on_commit=False)
-    async with Session() as s:
-        yield s
+    async with Session() as session:
+        yield session
 
 
 @pytest_asyncio.fixture
@@ -33,5 +33,5 @@ async def client(session):
     app.dependency_overrides[get_async_session] = override
 
     transport = ASGITransport(app=app)  # вот так подключаем FastAPI
-    async with AsyncClient(transport=transport, base_url="http://test") as c:
-        yield c
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
