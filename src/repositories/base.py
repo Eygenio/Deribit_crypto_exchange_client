@@ -36,7 +36,6 @@ class SQLAlchemyRepository:
             .offset(offset)
             .limit(limit)
         )
-
         result = await self.session.execute(statement)
         return result.scalars().all()
 
