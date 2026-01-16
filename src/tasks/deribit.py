@@ -1,5 +1,6 @@
-import asyncio, time
+import asyncio
 import logging
+import time
 
 from src.clients.deribit import fetch_price
 from src.db.db import async_session_maker

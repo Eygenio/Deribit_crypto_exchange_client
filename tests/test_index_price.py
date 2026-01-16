@@ -3,9 +3,9 @@ import pytest
 @pytest.mark.asyncio
 async def test_last_price(client):
     # no data
-    r = await client.get("/api/price/last?ticker=btc_usd")
-    assert r.status_code == 200
-    assert r.json() is None
+    result = await client.get("/api/price/last?ticker=btc_usd")
+    assert result.status_code == 200
+    assert result.json() is None
 
 @pytest.mark.asyncio
 async def test_insert_and_get(client, session):
@@ -15,8 +15,8 @@ async def test_insert_and_get(client, session):
     session.add(IndexPriceOrm(ticker="btc_usd", price=51000, timestamp=200))
     await session.commit()
 
-    r = await client.get("/api/price/last?ticker=btc_usd")
-    data = r.json()
+    result = await client.get("/api/price/last?ticker=btc_usd")
+    data = result.json()
 
     assert data["price"] == 51000
     assert data["timestamp"] == 200
@@ -32,8 +32,8 @@ async def test_by_date(client, session):
     ])
     await session.commit()
 
-    r = await client.get("/api/price/by-date?ticker=eth_usd&from_ts=150&to_ts=250")
-    data = r.json()
+    result = await client.get("/api/price/by-date?ticker=eth_usd&from_ts=150&to_ts=250")
+    data = result.json()
 
     assert len(data) == 1
     assert data[0]["price"] == 1100
