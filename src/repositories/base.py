@@ -1,8 +1,10 @@
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 class SQLAlchemyRepository:
     """Базовый класс с CRUD операций для SQLAlchemy."""
+
     def __init__(self, session: AsyncSession):
         # инициализация класса с сессиями базы данных
         self.session = session
@@ -14,7 +16,7 @@ class SQLAlchemyRepository:
         await self.session.execute(statement)
         await self.session.commit()
 
-    async def get_last(self, ticker:str):
+    async def get_last(self, ticker: str):
         """Получение последней записи."""
         statement = (
             select(self.model)
@@ -38,7 +40,14 @@ class SQLAlchemyRepository:
         result = await self.session.execute(statement)
         return result.scalars().all()
 
-    async def get_by_date(self, ticker: str, from_ts: int, to_ts: int, offset: int = 0, limit: int = 100):
+    async def get_by_date(
+            self,
+            ticker: str,
+            from_ts: int,
+            to_ts: int,
+            offset: int = 0,
+            limit: int = 100
+    ):
         """Получение записей с фильтром по дате, а также пагинации."""
         statement = (
             select(self.model)
@@ -49,6 +58,6 @@ class SQLAlchemyRepository:
             .order_by(self.model.timestamp.desc())
             .offset(offset)
             .limit(limit)
-            )
+        )
         result = await self.session.execute(statement)
         return result.scalars().all()

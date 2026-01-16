@@ -10,6 +10,7 @@ app = FastAPI(
     description="Public API v1"
 )
 
+
 @app.on_event("startup")
 async def startup():
     await create_tables()

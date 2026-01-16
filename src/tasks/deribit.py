@@ -9,15 +9,17 @@ from src.celery_app import celery
 
 logger = logging.getLogger("src.tasks.deribit")
 
+
 @celery.task
 def collect_prices():
     """
     Celery-задача, которая запускает асинхронный сбор индексных цен
     (Index Price) BTC и ETH с биржи Deribit
      и сохраняет их в базу данных.
-     """
+    """
     loop = asyncio.get_event_loop()
     loop.run_until_complete(run())
+
 
 async def run():
     """
@@ -30,8 +32,6 @@ async def run():
 
         for ticker in ["btc_usd", "eth_usd"]:
             price = await fetch_price(ticker)
-            await repository.add_one({
-                "ticker": ticker,
-                "price": price,
-                "timestamp": int(time.time())
-            })
+            await repository.add_one(
+                {"ticker": ticker, "price": price, "timestamp": int(time.time())}
+            )

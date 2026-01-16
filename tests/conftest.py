@@ -8,6 +8,7 @@ from src.app import app
 
 TEST_DB = "sqlite+aiosqlite:///:memory:"
 
+
 @pytest_asyncio.fixture
 async def engine():  # без scope="session"
     engine = create_async_engine(TEST_DB)
@@ -16,11 +17,13 @@ async def engine():  # без scope="session"
     yield engine
     await engine.dispose()
 
+
 @pytest_asyncio.fixture
 async def session(engine):
     Session = async_sessionmaker(engine, expire_on_commit=False)
     async with Session() as s:
         yield s
+
 
 @pytest_asyncio.fixture
 async def client(session):

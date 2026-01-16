@@ -8,7 +8,7 @@ celery = Celery(
     "worker",
     broker=CELERY_BROKER_URL,
     backend=CELERY_RESULT_BACKEND,
-    include=["src.tasks.deribit"]
+    include=["src.tasks.deribit"],
 )
 
 celery.conf.beat_schedule = {
