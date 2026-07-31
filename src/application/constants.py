@@ -1,0 +1,2 @@
+PAGE_SIZE = 1440
+OFFSET = 1

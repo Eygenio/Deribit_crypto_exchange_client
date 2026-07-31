@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class IndexPriceSchemaGet(BaseModel):
+class IndexPriceResponse(BaseModel):
     ticker: str
     price: float
     timestamp: int
