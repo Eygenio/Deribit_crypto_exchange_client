@@ -2,9 +2,9 @@ services:
   db:
     image: postgres
     environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-database}
+      POSTGRES_USER: ${DB__USER:-postgres}
+      POSTGRES_PASSWORD: ${DB__PASSWORD:-postgres}
+      POSTGRES_DB: ${DB__NAME:-database}
     ports:
       - "5432:5432"
     healthcheck:
@@ -31,7 +31,7 @@ services:
 
   celery:
     build: .
-    command: celery -A src.celery_app worker -B
+    command: celery -A src.tasks.deribit worker -B
     depends_on:
       db:
         condition: service_healthy

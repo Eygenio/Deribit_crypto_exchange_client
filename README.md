@@ -1,78 +1,60 @@
 # 📈 Crypto Index Price API — FastAPI + Celery + PostgreSQL
 
-Backend-сервис для сбора и хранения индексных цен криптовалют BTC и ETH с биржи Deribit
-и предоставления публичного API для их анализа.
+A backend service that periodically fetches BTC and ETH index prices from
+Deribit, stores them in PostgreSQL, and provides a public API for analysis.
 
-Проект реализует:
-- периодический сбор цен с биржи
-- хранение истории в PostgreSQL
-- REST API для получения данных
+Features:
+- Scheduled price fetching every minute (Celery Beat)
+- Historical price storage
+- REST API for querying prices
 
 ---
 
-## 🚀 Возможности
+## 🚀 Features
 
-- ⏱️ Автоматический сбор цен BTC_USD и ETH_USD каждую минуту
-- 🗄 Хранение истории цен
-- 📊 Получение:
-  - последней цены
-  - всей истории
-  - цен за выбранный период
-- 🐇 Celery + RabbitMQ
+- ⏱️ Automated collection of BTC_USD and ETH_USD every minute
+- 🗄 Historical price storage in PostgreSQL
+- 📊 API for:
+  - last price
+  - all prices (paginated)
+  - prices filtered by date range
+- 🐇 Celery + RabbitMQ for background tasks
 - 🐳 Docker + docker-compose
 - ⚡ FastAPI + async SQLAlchemy
 
 ---
 
-## 🏗 Архитектура
+## 🏗 Architecture
 
-Архитектура построена по принципу:
-Routing → Service → Repository
-  ↓
-Deribit Client
+The application follows **Clean Architecture** with clear separation of concerns:
 
 ```
-app/
- ├── src/
- │    ├── clients
- │    │    └── deribit.py
- │    ├── config/
- │    │    ├── base.py
- │    │    └── logging_config.py
- │    ├── db
- │    │    └── db.py
- │    ├── models/
- │    │    ├── __init__.py
- │    │    ├── base.py
- │    │    └── index_price.py
- │    ├── repositories/
- │    │    ├── base.py
- │    │    └── index_price.py
- │    ├── routing/
- │    │    └── index_price.py
- │    ├── schemas/
- │    │    └── index_price.py
- │    ├── services/
- │    │    └── index_price.py
- │    ├── tasks/
- │    │    └── deribit.py
- │    ├── app.py
- │    └── celery_app.py
- ├── tests/
- │    ├── conftest.py
- │    ├── test_client.py
- │    └── test_index_price.py
- ├── .env
- ├── docker-compose.yml
- ├── Dockerfile
- ├── pytest.ini
- ├── README.md
- └── requirements.txt
+src/
+├── application/ # Service layer (business logic)
+│ ├── services/
+│ └── constants.py
+├── domain/ # Entities and repository interfaces
+│ ├── entities.py
+│ └── repositories.py
+├── infrastructure/ # ORM models, repository implementations, Unit of Work
+│ ├── models/
+│ ├── repositories/
+│ └── unit_of_work.py
+├── presentation/ # FastAPI routers, Pydantic schemas, dependencies
+│ ├── api/
+│ ├── schemas/
+│ └── dependencies.py
+├── config/ # Pydantic settings
+├── db/ # Database engine and session factory
+├── clients/ # External API clients (Deribit)
+├── tasks/ # Celery tasks
+├── app.py # Application entry point
+└── celery_app.py # Celery configuration
 ```
 
 ---
 
-## ⚙️ Стек
+## ⚙️ Stack
 
 - FastAPI
 - Celery 5
@@ -80,71 +62,61 @@ app/
 - PostgreSQL
 - aiohttp
 - SQLAlchemy 2 (async)
+- Pydantic + pydantic-settings
 - Docker + docker-compose
-- Pytest
+- Poetry (dependency management)
+- pytest (unit, integration, e2e)
+- Ruff / MyPy / pre-commit
 
 ---
 
-# 🚀 Запуск проекта (локально)
+# 🚀 Getting Started
 
-## 1. Клонировать репозиторий
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/Eygenio/Deribit_crypto_exchange_client
 ```
 
-## 2. Создать `.env` или скопируйте содержимое `.env.template` в `.env`
+## 2. Create a `.env` file (or copy from the provided template):
 
 ```
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=database
-CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-CELERY_RESULT_BACKEND=rpc://
-RABBIT_USER=guest
-RABBIT_PASSWORD=guest
+APP__HOST=0.0.0.0
+APP__PORT=8000
+
+DB__NAME=database
+DB__USER=postgres
+DB__PASSWORD=postgres
+DB__HOST=db
+DB__PORT=5432
+DB__DRIVER_NAME=postgresql+asyncpg
+
+BROKER__URL=amqp://guest:guest@rabbitmq:5672//
+BROKER__RESULT_BACKEND=rpc://
 ```
 
-## 3. 🐳 Сборка через Docker
+## 3. 🐳 Build & run with Docker
 
 ```bash
 docker-compose build
-```
-
-## 4. 🐳 Запуск через Docker
-
-```bash
 docker-compose up -d
 ```
 
-## 🔗 Доступ к сервису
-
-```bash
-http://localhost::8080/ 
-```
-
-## 🔗 Доступ к документации
-
-```bash
-http://localhost::8080/docs/
-```
-
----
+The service will be available at `http://localhost:8000`.
+Interactive API docs: `http://localhost:8000/docs`.
 
 ## 📡 API
 
-### Получить последнюю цену
+### Get last price
 ```bash
 GET /api/price/last?ticker=btc_usd
 ```
 
-### Получить всю историю
+### Get all prices (paginated)
 ```bash
 GET /api/prices?ticker=btc_usd&page=1
 ```
-### Получить цены за период
+### Get prices by date range
 ```bash
 GET /api/price/by-date?ticker=btc_usd&from_ts=1700000000&to_ts=1700100000&page=1
 ```
@@ -153,36 +125,47 @@ GET /api/price/by-date?ticker=btc_usd&from_ts=1700000000&to_ts=1700100000&page=1
 
 ## 🧠 Design decisions
 
-### Почему Celery
-Deribit API нужно опрашивать регулярно — Celery Beat позволяет надёжно запускать задачи по расписанию и масштабировать сбор данных.
-
-### Почему aiohttp
-aiohttp обеспечивает асинхронные HTTP-запросы без блокировки event loop FastAPI и Celery.
-
-### Почему Repository Pattern
-Он отделяет бизнес-логику от SQL и позволяет:
-- легко писать тесты
-- менять БД
-- переиспользовать сервисы
-
-### Почему timestamp в UNIX
-UNIX timestamp:
-- легко сравнивается
-- легко фильтруется
-- быстро индексируется
-
-### Почему pagination
-История цен быстро растёт → API не должен отдавать тысячи строк за раз.
+* **Celery** — reliably runs scheduled tasks and scales data collection.
+* **aiohttp** — async HTTP client that doesn't block the FastAPI/Celery event loop.
+* **Repository Pattern + Unit of Work** — isolates business logic from SQL, simplifies testing and DB changes.
+* **UNIX timestamp** — easy to compare, filter, and index.
+* **Pagination** — prevents returning thousands of rows at once.
 
 ---
 
-## 🧪 Тестирование
+## 🧪 Testing
+
 ```bash
-Pytest
+docker-compose exec app pytest -v
 ```
-### 🐳 Запуск тестов в Docker
+Tests are organized into:
+* **unit** — services with mocked UoW
+* **integration** — API + real DB (SQLite in-memory)
+* **e2e** — full flow from API to DB
+*
+---
+
+## 🧹 Code Quality
+
+All code quality tools are configured in `pyproject.toml` and `.pre-commit-config.yaml`.
+
 ```bash
-docker-compose exec app pytest -x
+# Formatting and linting
+ruff check . --fix
+ruff format .
+
+# Type checking
+mypy src
 ```
+
+Pre-commit hooks run automatically on `git commit`.
+
+---
+
+## 🔐 Security
+
+* No authentication required (public API)
+* PostgreSQL isolated within Docker network
+* Environment variables for all sensitive configuration
 
 ---
